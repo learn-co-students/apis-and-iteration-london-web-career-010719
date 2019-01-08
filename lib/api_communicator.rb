@@ -4,10 +4,15 @@ require 'pry'
 
 def get_character_movies_from_api(character_name)
   response_hash = pull_from_api("http://www.swapi.co/api/people/")
-  get_film_urls(response_hash, character_name).collect do |film_url|
-    pull_from_api(film_url)
+  film_urls = get_film_urls(response_hash, character_name)
+  if film_urls.length > 0
+    film_urls.collect {|film_url| pull_from_api(film_url)}
+  else
+  puts "This character is not in the Star Wars Universe!"
+  exit
   end
 end
+
 
 def pull_from_api(url)
   JSON.parse(RestClient.get(url))
@@ -15,10 +20,12 @@ end
 
 def get_film_urls(hash, character_name)
   film_array=[]
-  hash["results"].each {|character_data|
-  if character_data["name"].downcase! == character_name
-    film_array = character_data["films"]
-  end }
+  hash["results"].each do |character_data|
+    binding.pry
+    if character_data["name"].downcase == character_name || character_data["name"].split[0].downcase == character_name
+      film_array = character_data["films"]
+    end
+  end
   film_array
 end
 
